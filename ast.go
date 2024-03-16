@@ -1,14 +1,22 @@
 package main
 
 type ExprType int
+type OpKind int
 
 const (
 	Constant ExprType = iota
-	Plus     ExprType = iota
+	Binary
+)
+
+const (
+	Add OpKind = iota
+	Sub
+	Mul
+	Div
 )
 
 type Exprs struct {
-	PlusOp      *PlusOp
+	BinaryOp    *BinaryOp
 	ConstantVal *ConstantVal
 }
 
@@ -29,8 +37,8 @@ func (e *Expr) eval() int {
 	switch e.Type {
 	case Constant:
 		return e.Operator.ConstantVal.eval()
-	case Plus:
-		return e.Operator.PlusOp.eval()
+	case Binary:
+		return e.Operator.BinaryOp.eval()
 	default:
 		panic("Invalid operator")
 	}
@@ -47,18 +55,33 @@ func (cv *ConstantVal) eval() int {
 	return int(*cv)
 }
 
-type PlusOp struct {
+type BinaryOp struct {
+	Kind      OpKind
 	LeftExpr  *Expr
 	RightExpr *Expr
 }
 
-func newPlusOp(leftExpr *Expr, rightExpr *Expr) *PlusOp {
-	po := new(PlusOp)
+func newBinaryOp(kind OpKind, leftExpr *Expr, rightExpr *Expr) *BinaryOp {
+	po := new(BinaryOp)
+	po.Kind = kind
 	po.LeftExpr = leftExpr
 	po.RightExpr = rightExpr
 	return po
 }
 
-func (po *PlusOp) eval() int {
-	return po.LeftExpr.eval() + po.RightExpr.eval()
+func (po *BinaryOp) eval() int {
+	right := po.RightExpr.eval()
+	left := po.LeftExpr.eval()
+	switch po.Kind {
+	case Add:
+		return left + right
+	case Sub:
+		return left - right
+	case Mul:
+		return left * right
+	case Div:
+		return left / right
+	default:
+		panic("Invalid Operator kind")
+	}
 }
